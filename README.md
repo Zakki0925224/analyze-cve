@@ -25,6 +25,7 @@ $ python ./gen_cve_json.py
     {
         "cve_id": string,
         "cwe_id": string[],
+        "year": number,
         "descriptions": string[],
         "products": string[],
         "vendors": string[],
@@ -42,9 +43,7 @@ $ python ./gen_cve_json.py
                 "availability_impact": string (empty is ""),
                 "base_score": number (empty is -1)
             },
-            "severity": string (empty is ""),
-            "exploitability_score": float (empty is -1),
-            "impact_score": number (empty is -1)
+            "severity": string (empty is "")
         }
     },
     {...}

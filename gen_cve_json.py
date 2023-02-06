@@ -32,6 +32,7 @@ for obj in objs:
         descriptions = [x["value"] for x in item["cve"]["description"]["description_data"]]
         published_date = item["publishedDate"]
         last_modified_date = item["lastModifiedDate"]
+        year = int(str(cve_id)[4:8])
 
 
         cvssv2 = {}
@@ -47,8 +48,6 @@ for obj in objs:
             cvssv2_base_metrics["base_score"] = _base_metricv2["cvssV2"]["baseScore"]
             cvssv2["base_metrics"] = cvssv2_base_metrics
             cvssv2["severity"] = _base_metricv2["severity"]
-            cvssv2["exploitability_score"] = _base_metricv2["exploitabilityScore"]
-            cvssv2["impact_score"] = _base_metricv2["impactScore"]
 
         except:
             cvssv2_base_metrics["access_vector"] = ""
@@ -60,8 +59,6 @@ for obj in objs:
             cvssv2_base_metrics["base_score"] = -1
             cvssv2["base_metrics"] = cvssv2_base_metrics
             cvssv2["severity"] = ""
-            cvssv2["exploitability_score"] = -1
-            cvssv2["impact_score"] = -1
 
         # remove duplicates
         products = list(set(products))
@@ -70,6 +67,7 @@ for obj in objs:
         cve = {}
         cve["cve_id"] = cve_id
         cve["cwe_id"] = cwe_id
+        cve["year"] = year
         cve["descriptions"] = descriptions
         cve["products"] = products
         cve["vendors"] = vendors
