@@ -1,6 +1,7 @@
 import json
 import os
 from cpe import CPE
+from cwe import Database
 
 nvdcve_dir = "nist-nvdcve"
 export_file = "cve-list.json"
@@ -8,6 +9,7 @@ nvdcve_files = os.listdir(nvdcve_dir)
 nvdcve_files.sort()
 objs = []
 cve_items = []
+cwe_db = Database()
 
 for file in nvdcve_files:
     with open(f"./{nvdcve_dir}/{file}", "r") as f:
@@ -18,6 +20,7 @@ cve_items_len = sum(len(x["CVE_Items"]) for x in objs)
 
 for obj in objs:
     for item in obj["CVE_Items"]:
+
         _cpes = [x["cpe23Uri"] for node in item["configurations"]["nodes"] for x in node["cpe_match"]]
         products = []
         vendors = []
@@ -28,11 +31,13 @@ for obj in objs:
             vendors += cpe.get_vendor()
 
         cve_id = item["cve"]["CVE_data_meta"]["ID"]
-        cwe_id = [x["value"] for x in [y for sublist in [description['description'] for description in item["cve"]["problemtype"]["problemtype_data"]] for y in sublist]]
-        descriptions = [x["value"] for x in item["cve"]["description"]["description_data"]]
+        _cwes = [x["value"] for x in [y for sublist in [description['description'] for description in item["cve"]["problemtype"]["problemtype_data"]] for y in sublist]]
+        cwe_id = _cwes[0] if len(_cwes) > 0 else ""
+        _descriptions = [x["value"] for x in item["cve"]["description"]["description_data"]]
+        description = _descriptions[0] if len(_descriptions) > 0 else ""
         published_date = item["publishedDate"]
         last_modified_date = item["lastModifiedDate"]
-        year = int(str(cve_id)[4:8])
+        year = int(cve_id[4:8])
 
 
         cvssv2 = {}
@@ -68,16 +73,25 @@ for obj in objs:
         cve["cve_id"] = cve_id
         cve["cwe_id"] = cwe_id
         cve["year"] = year
-        cve["descriptions"] = descriptions
+        cve["description"] = description
         cve["products"] = products
         cve["vendors"] = vendors
         cve["published_date"] = published_date
         cve["last_modified_date"] = last_modified_date
         cve["cvssv2"] = cvssv2
 
+        # detect vulnerability type
+        vulnerability_type = ""
+        try:
+            vulnerability_type = cwe_db.get(int(str(cwe_id).split("-")[1])).name
+
+        except:
+            pass
+
+        cve["vulnerability_type"] = vulnerability_type
         cve_items.append(cve)
         cve_items_len -= 1
-        print(f"remaing: {cve_items_len}")
+        print(f"remaing count: {cve_items_len}")
 
 with open(f"./{export_file}", "w") as f:
     f.write(json.dumps(cve_items))
