@@ -94,5 +94,8 @@ for obj in objs:
         print(f"remaing count: {cve_items_len}")
 
 with open(f"./{export_file}", "w") as f:
-    f.write(json.dumps(cve_items))
+    dump = json.dumps(cve_items)
+    # escape semicolon
+    dump.replace(";", "\;")
+    f.write(dump)
     print(f"generated ./{export_file}")
